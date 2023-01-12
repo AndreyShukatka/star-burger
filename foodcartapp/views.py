@@ -1,7 +1,9 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
 import requests
+import phonenumbers
 from rest_framework.response import Response
+from rest_framework import status
 
 from rest_framework.decorators import api_view
 from .models import Product, Order
@@ -29,6 +31,7 @@ def banners_list_api(request):
         'ensure_ascii': False,
         'indent': 4,
     })
+
 
 @api_view(['GET'])
 def product_list_api(request):
@@ -58,16 +61,16 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    # TODO это лишь заглушка
-    try:
-        products = request.data['products']
-        if not products:
-            return Response({'products': 'Это поле не может быть пустым.'})
-    except KeyError:
-        return Response({'products': 'Обязательное поле.'})
-    if not isinstance(products, list) or len(products):
-        return Response({'products': 'Ожидался list со значениями, но был получен "str".'})
-    else:
-        order = request.data
-        print(order)
+    products = Product.objects.all()
+    all_fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
+    incorect_field = [field for field in all_fields if not request.data.get(field)]
+    phone_parsed = phonenumbers.parse(request.data['phonenumber'])
+    if incorect_field:
+        return Response({f'{incorect_field}'.replace('[', '').replace(']', ''): 'Обязательное поле и не может быть пустым.'}, status=status.HTTP_404_NOT_FOUND)
+    elif not phonenumbers.is_valid_number(phone_parsed):
+        return Response({'phonenumber': 'Введен некорректный номер телефона.'}, status=status.HTTP_404_NOT_FOUND)
+    for product in request.data['products']:
+        if not products.filter(id=product['product']):
+           return Response({'products': f'Недопустимый первичный ключ {product["product"]}'}, status=status.HTTP_404_NOT_FOUND)
+    order = request.data
     return Response(order)
