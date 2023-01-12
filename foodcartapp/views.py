@@ -1,7 +1,9 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+import json
+from rest_framework.response import Response
 
-
+from rest_framework.decorators import api_view
 from .models import Product
 
 
@@ -28,7 +30,7 @@ def banners_list_api(request):
         'indent': 4,
     })
 
-
+@api_view(['GET'])
 def product_list_api(request):
     products = Product.objects.select_related('category').available()
 
@@ -51,12 +53,12 @@ def product_list_api(request):
             }
         }
         dumped_products.append(dumped_product)
-    return JsonResponse(dumped_products, safe=False, json_dumps_params={
-        'ensure_ascii': False,
-        'indent': 4,
-    })
+    return Response(dumped_products)
+
 
 
 def register_order(request):
+    data = json.loads(request.body.decode())
+    print(request.body)
     # TODO это лишь заглушка
     return JsonResponse({})
