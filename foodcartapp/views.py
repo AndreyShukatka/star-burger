@@ -56,8 +56,18 @@ def product_list_api(request):
     return Response(dumped_products)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def register_order(request):
-    orders = Order.objects.all()
     # TODO это лишь заглушка
-    return Response(orders)
+    try:
+        products = request.data['products']
+        if not products:
+            return Response({'products': 'Это поле не может быть пустым.'})
+    except KeyError:
+        return Response({'products': 'Обязательное поле.'})
+    if not isinstance(products, list) or len(products):
+        return Response({'products': 'Ожидался list со значениями, но был получен "str".'})
+    else:
+        order = request.data
+        print(order)
+    return Response(order)
