@@ -1,10 +1,10 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-import json
+import requests
 from rest_framework.response import Response
 
 from rest_framework.decorators import api_view
-from .models import Product
+from .models import Product, Order
 
 
 def banners_list_api(request):
@@ -56,9 +56,8 @@ def product_list_api(request):
     return Response(dumped_products)
 
 
-
+@api_view(['GET'])
 def register_order(request):
-    data = json.loads(request.body.decode())
-    print(request.body)
+    orders = Order.objects.all()
     # TODO это лишь заглушка
-    return JsonResponse({})
+    return Response(orders)
