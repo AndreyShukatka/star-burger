@@ -4,6 +4,9 @@ import requests
 import phonenumbers
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.serializers import ValidationError
+from rest_framework.serializers import Serializer
+from rest_framework.serializers import CharField, ListField
 
 from rest_framework.decorators import api_view
 from .models import Product, Order
@@ -59,18 +62,58 @@ def product_list_api(request):
     return Response(dumped_products)
 
 
+# def check_order_details(order, products):
+#     all_fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
+#     incorect_field = [field for field in all_fields if not order.get(field)]
+#     phone_parsed = phonenumbers.parse(order['phonenumber'])
+#     errors = []
+#     print(8)
+#     if incorect_field:
+#         print(1)
+#         errors.append(
+#             {f'{incorect_field}'.replace('[', '').replace(']', ''): 'Обязательное поле и не может быть пустым.'}
+#         )
+#     if not phonenumbers.is_valid_number(phone_parsed):
+#         print(2)
+#         errors.append({'phonenumber': 'Введен некорректный номер телефона.'})
+#     print(order['products'])
+#     try:
+#         for product in order['products']:
+#             if not products.filter(id=product['product']):
+#                 print(4)
+#                 errors.append({'products': f'Недопустимый первичный ключ {product["product"]}'})
+#     finally:
+#         if errors:
+#             print(3)
+#             print(errors)
+#             raise ValidationError(errors)
+class ApplicationSerializer(Serializer):
+    products = ListField()
+    firstname = CharField()
+    lastname = CharField()
+    phonenumber = CharField()
+    address = CharField()
+
+    def validate_products(self, value):
+        if not value:
+            raise ValidationError('Это поле не может быть пустым.')
+        for product in value:
+            if not Product.objects.filter(id=product['product']):
+                raise ValidationError(f'Недопустимый первичный ключ {product.get("product")}')
+        return value
+
+    def validate_phonenumber(self, value):
+        phonenumber = phonenumbers.parse(value)
+        if not phonenumbers.is_valid_number(phonenumber):
+            raise ValidationError('Введен некорректный номер телефона.')
+        return value
+
+
 @api_view(['POST'])
 def register_order(request):
-    products = Product.objects.all()
-    all_fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
-    incorect_field = [field for field in all_fields if not request.data.get(field)]
-    phone_parsed = phonenumbers.parse(request.data['phonenumber'])
-    if incorect_field:
-        return Response({f'{incorect_field}'.replace('[', '').replace(']', ''): 'Обязательное поле и не может быть пустым.'}, status=status.HTTP_404_NOT_FOUND)
-    elif not phonenumbers.is_valid_number(phone_parsed):
-        return Response({'phonenumber': 'Введен некорректный номер телефона.'}, status=status.HTTP_404_NOT_FOUND)
-    for product in request.data['products']:
-        if not products.filter(id=product['product']):
-           return Response({'products': f'Недопустимый первичный ключ {product["product"]}'}, status=status.HTTP_404_NOT_FOUND)
+    serializer = ApplicationSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
     order = request.data
+    products = Product.objects.all()
+    # check_order_details(order, products)
     return Response(order)
