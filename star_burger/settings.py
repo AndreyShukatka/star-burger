@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'phonenumber_field',
     'rest_framework',
+    'addressapp'
 ]
 
 YA_GEO_API_KEY = env('YA_GEO_API_KEY')

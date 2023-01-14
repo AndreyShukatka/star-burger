@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.conf import settings
+from addressapp.models import AddressCoordinate
 
 from foodcartapp.models import Product, Restaurant, Order
 import requests
@@ -109,15 +110,34 @@ def view_orders(request):
         )
         restaurant_distance = []
         for restaurant in restaurants_with_all_products:
-            address = order.address
-            user_coord = fetch_coordinates(settings.YA_GEO_API_KEY, address)
+            try:
+                address_obj = AddressCoordinate.objects.get(address=order.address)
+                user_coord = (address_obj.lat, address_obj.lon)
+            except AddressCoordinate.DoesNotExist:
+                user_coord = fetch_coordinates(settings.YA_GEO_API_KEY, order.address)
+                if not user_coord:
+                    continue
+                AddressCoordinate.objects.create(
+                    address=order.address,
+                    lat=user_coord[0],
+                    lon=user_coord[1]
+                )
             if restaurant not in restaurants_coordinates.keys():
-                restaurant_coord = fetch_coordinates(settings.YA_GEO_API_KEY, restaurant.address)
+                try:
+                    address_obj = AddressCoordinate.objects.get(address=restaurant.address)
+                    restaurant_coord = (address_obj.lat, address_obj.lon)
+                except AddressCoordinate.DoesNotExist:
+                    restaurant_coord = fetch_coordinates(settings.YA_GEO_API_KEY, restaurant.address)
+                    if not restaurant_coord:
+                        continue
+                    AddressCoordinate.objects.create(
+                        address=restaurant.address,
+                        lat=restaurant_coord[0],
+                        lon=restaurant_coord[1]
+                    )
                 restaurants_coordinates[restaurant] = restaurant_coord
             else:
                 restaurant_coord = restaurants_coordinates[restaurant]
-            if not user_coord or not restaurant_coord:
-                continue
             delivery_distance = round(distance.distance(user_coord, restaurant_coord).km, 3)
             restaurant_distance.append((restaurant, delivery_distance))
         restaurant_distance = sorted(restaurant_distance, key=lambda tpl: tpl[1])
