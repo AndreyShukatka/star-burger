@@ -144,6 +144,16 @@ class OrderProductQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
+    ACCEPT = 'AC'
+    ASSEMBLY = 'AS'
+    DELIVERY = 'DL'
+    FINISH = 'FN'
+    STATUS_ORDER_CHOICES = [
+        (ACCEPT, 'Принят'),
+        (ASSEMBLY, 'Сборка'),
+        (DELIVERY, 'Доставка'),
+        (FINISH, 'Завершен')
+    ]
     firstname = models.CharField(
         'Имя',
         max_length=200
@@ -158,6 +168,8 @@ class Order(models.Model):
     address = models.TextField(
         'Адрес доставки'
     )
+    order_status = models.CharField(max_length=2, choices=STATUS_ORDER_CHOICES,
+                                    default=ACCEPT, verbose_name='Статус заказа', db_index=True)
 
     objects = OrderProductQuerySet.as_manager()
 

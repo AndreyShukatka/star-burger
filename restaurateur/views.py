@@ -90,7 +90,7 @@ def view_restaurants(request):
 
 
 def view_orders(request):
-    orders = Order.objects.all()
+    orders = Order.objects.exclude(order_status='FN')
     orders_cost = Order.objects.order_cost()
     return render(request, template_name='order_items.html', context={
         'order_items': orders,
