@@ -194,6 +194,7 @@ class Order(models.Model):
     objects = OrderProductQuerySet.as_manager()
 
     class Meta:
+        ordering = ['order_status', '-created_at']
         verbose_name = 'Заказы'
         verbose_name_plural = 'Заказы'
 
