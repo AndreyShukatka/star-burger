@@ -168,6 +168,10 @@ class Order(models.Model):
     address = models.TextField(
         'Адрес доставки'
     )
+    comment = models.TextField(
+        'Комментарий',
+        blank=True
+    )
     order_status = models.CharField(max_length=2, choices=STATUS_ORDER_CHOICES,
                                     default=ACCEPT, verbose_name='Статус заказа', db_index=True)
 
