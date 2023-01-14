@@ -4,9 +4,8 @@ import requests
 import phonenumbers
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.serializers import ValidationError
-from rest_framework.serializers import Serializer
-from rest_framework.serializers import CharField, ListField
+from .serializers import OrderSerializer
+from .models import Product, Order, OrderElement
 
 from rest_framework.decorators import api_view
 from .models import Product, Order
@@ -62,32 +61,22 @@ def product_list_api(request):
     return Response(dumped_products)
 
 
-class ApplicationSerializer(Serializer):
-    products = ListField()
-    firstname = CharField()
-    lastname = CharField()
-    phonenumber = CharField()
-    address = CharField()
-
-    def validate_products(self, value):
-        if not value:
-            raise ValidationError('Это поле не может быть пустым.')
-        for product in value:
-            if not Product.objects.filter(id=product['product']):
-                raise ValidationError(f'Недопустимый первичный ключ {product.get("product")}')
-        return value
-
-    def validate_phonenumber(self, value):
-        phonenumber = phonenumbers.parse(value)
-        if not phonenumbers.is_valid_number(phonenumber):
-            raise ValidationError('Введен некорректный номер телефона.')
-        return value
-
-
 @api_view(['POST'])
 def register_order(request):
-    serializer = ApplicationSerializer(data=request.data)
+    serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    order = request.data
-    products = Product.objects.all()
-    return Response(order)
+    created_order = Order.objects.create(
+        address=serializer.validated_data['address'],
+        firstname=serializer.validated_data['firstname'],
+        lastname=serializer.validated_data['lastname'],
+        phonenumber=serializer.validated_data['phonenumber'],
+    )
+    all_products = Product.objects.all()
+    for product in serializer.validated_data['products']:
+        OrderElement.objects.create(
+            order=created_order,
+            product=all_products.get(id=product['product'].id),
+            quantity=product['quantity'],
+        )
+    serializer = OrderSerializer(created_order)
+    return Response(serializer.data)

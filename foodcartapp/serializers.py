@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from foodcartapp.models import Order
+from foodcartapp.models import Order, OrderElement
 
 
-class OrderElementSerializer(ModelSerializer):
+class OrderElementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderElement
@@ -12,8 +12,8 @@ class OrderElementSerializer(ModelSerializer):
         return OrderElement.objects.create(**validated_data)
 
 
-class OrderSerializer(ModelSerializer):
-    id = IntegerField(read_only=True)
+class OrderSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
     products = OrderElementSerializer(
         many=True, allow_empty=False, write_only=True
     )
