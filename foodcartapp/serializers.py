@@ -1,13 +1,14 @@
 from rest_framework import serializers
 from foodcartapp.models import Order, OrderElement
+from django.db import transaction
 
 
 class OrderElementSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = OrderElement
         fields = ['quantity', 'product']
 
+    @transaction.atomic
     def create(self, validated_data):
         return OrderElement.objects.create(**validated_data)
 
