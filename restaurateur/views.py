@@ -91,7 +91,6 @@ def view_restaurants(request):
 
 def view_orders(request):
     orders = Order.objects.exclude(order_status='FN').prefetch_related('products')
-    print(orders)
     orders_cost = Order.objects.order_cost()
     products_in_restaurants = {}
     for order in orders:
