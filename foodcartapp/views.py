@@ -62,31 +62,6 @@ def product_list_api(request):
     return Response(dumped_products)
 
 
-# def check_order_details(order, products):
-#     all_fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
-#     incorect_field = [field for field in all_fields if not order.get(field)]
-#     phone_parsed = phonenumbers.parse(order['phonenumber'])
-#     errors = []
-#     print(8)
-#     if incorect_field:
-#         print(1)
-#         errors.append(
-#             {f'{incorect_field}'.replace('[', '').replace(']', ''): 'Обязательное поле и не может быть пустым.'}
-#         )
-#     if not phonenumbers.is_valid_number(phone_parsed):
-#         print(2)
-#         errors.append({'phonenumber': 'Введен некорректный номер телефона.'})
-#     print(order['products'])
-#     try:
-#         for product in order['products']:
-#             if not products.filter(id=product['product']):
-#                 print(4)
-#                 errors.append({'products': f'Недопустимый первичный ключ {product["product"]}'})
-#     finally:
-#         if errors:
-#             print(3)
-#             print(errors)
-#             raise ValidationError(errors)
 class ApplicationSerializer(Serializer):
     products = ListField()
     firstname = CharField()
@@ -115,5 +90,4 @@ def register_order(request):
     serializer.is_valid(raise_exception=True)
     order = request.data
     products = Product.objects.all()
-    # check_order_details(order, products)
     return Response(order)
