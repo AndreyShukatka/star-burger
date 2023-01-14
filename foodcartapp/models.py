@@ -130,8 +130,8 @@ class OrderProductQuerySet(models.QuerySet):
         order_products_cost = (
             OrderElement.objects
             .all()
-            .select_related('product')
-            .annotate(cost=F('product__price') * F('quantity'))
+            .select_related('price')
+            .annotate(cost=F('price') * F('quantity'))
             .values_list('order', 'cost')
             .values('order')
             .annotate(total_price=Sum('cost'))
@@ -182,6 +182,12 @@ class OrderElement(models.Model):
     quantity = models.IntegerField(
         'количество',
         validators=[MinValueValidator(1)],
+    )
+    price = models.DecimalField(
+        'цена',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
     )
 
     class Meta:
