@@ -3,7 +3,7 @@ from django import template
 register = template.Library()
 
 
-@register.filter('get_order_cost')
-def get_order_cost(orders_cost, order):
+@register.filter('get_order_param')
+def get_order_param(orders_param, order):
     if order:
-        return orders_cost.get(order, 0)
+        return orders_param.get(order)

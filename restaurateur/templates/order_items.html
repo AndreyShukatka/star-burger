@@ -32,10 +32,26 @@
           <td>{{ item.id }}</td>
           <td>{{ item.get_order_status_display }}</td>
           <td>{{ item.get_pay_method_display }}</td>
-          <td>{{ orders_cost|get_order_cost:item.id }} руб.</td>
+          <td>{{ orders_cost|get_order_param:item.id }} руб.</td>
           <td>{{ item.firstname }} {{ item.lastname }}</td>
           <td>{{ item.phonenumber }}</td>
           <td>{{ item.address }}</td>
+          <td>
+            {% if item.restaurant %}
+              Готовит {{ item.restaurant }}
+            {% elif not restaurants|get_order_param:item.id %}
+              Ошибка определения координат
+            {% else %}
+              <details>
+                <summary>Может быть приготовлен ресторанами:</summary>
+                <ul>
+                  {% for restaurant in restaurants|get_order_param:item.id %}
+                    <li>{{ restaurant }}</li>
+                  {% endfor %}
+                </ul>
+              </details>
+            {% endif %}
+          </td>
           <td>{{ item.comment }}</td>
           <td><a href="{% url 'admin:foodcartapp_order_change' object_id=item.id %}?next={{ request.get_full_path|urlencode }}">Редактировать</a> </td>
         </tr>

@@ -161,6 +161,9 @@ class Order(models.Model):
         (ELECTRONIC_PAY, 'Электронными'),
         (CASH_PAY, 'Наличными')
     ]
+    products = models.ManyToManyField(Product, related_name='orders', through='OrderElement', verbose_name='Продукты')
+    restaurant = models.ForeignKey(Restaurant, related_name='cook_orders', blank=True, null=True,
+                                   on_delete=models.SET_NULL, verbose_name='Готовит ресторан')
     firstname = models.CharField(
         'Имя',
         max_length=200
