@@ -139,11 +139,36 @@ class Order(models.Model):
     address = models.TextField(
         'Адрес доставки'
     )
-    products = models.ForeignKey(
-        Product,
-        Product,
-        'Продукт',
-    )
+
     class Meta:
         verbose_name = 'Заказы'
         verbose_name_plural = 'Заказы'
+
+
+class OrderElement(models.Model):
+    order = models.ForeignKey(
+        Order,
+        verbose_name='заказ',
+        related_name='order_elements',
+        on_delete=models.CASCADE,
+    )
+    product = models.ForeignKey(
+        Product,
+        verbose_name='товар',
+        related_name='order_elements',
+        on_delete=models.CASCADE,
+    )
+    quantity = models.IntegerField(
+        'количество',
+        validators=[MinValueValidator(1)],
+    )
+
+    class Meta:
+        verbose_name = 'элемент заказа'
+        verbose_name_plural = 'элементы заказа'
+
+    def __str__(self):
+        return f'''
+        {self.product.name}, {self.order.firstname}
+        {self.order.lastname} {self.order.address}
+        '''
