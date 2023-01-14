@@ -149,11 +149,17 @@ class Order(models.Model):
     ASSEMBLY = 'AS'
     DELIVERY = 'DL'
     FINISH = 'FN'
+    ELECTRONIC_PAY = 'EL'
+    CASH_PAY = 'CS'
     STATUS_ORDER_CHOICES = [
         (ACCEPT, 'Принят'),
         (ASSEMBLY, 'Сборка'),
         (DELIVERY, 'Доставка'),
         (FINISH, 'Завершен')
+    ]
+    PAY_METHOD_CHOICES = [
+        (ELECTRONIC_PAY, 'Электронными'),
+        (CASH_PAY, 'Наличными')
     ]
     firstname = models.CharField(
         'Имя',
@@ -166,9 +172,12 @@ class Order(models.Model):
     phonenumber = PhoneNumberField(
         'Телефон'
     )
-    address = models.TextField(
-        'Адрес доставки'
+    address = models.CharField(
+        'Адрес доставки',
+        max_length=200
     )
+    pay_method = models.CharField(max_length=2, choices=PAY_METHOD_CHOICES,
+                                  default=CASH_PAY, verbose_name='Способ оплаты', db_index=True)
     comment = models.TextField(
         'Комментарий',
         blank=True
