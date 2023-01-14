@@ -161,9 +161,20 @@ class Order(models.Model):
         (ELECTRONIC_PAY, 'Электронными'),
         (CASH_PAY, 'Наличными')
     ]
-    products = models.ManyToManyField(Product, related_name='orders', through='OrderElement', verbose_name='Продукты')
-    restaurant = models.ForeignKey(Restaurant, related_name='cook_orders', blank=True, null=True,
-                                   on_delete=models.SET_NULL, verbose_name='Готовит ресторан')
+    products = models.ManyToManyField(
+        Product,
+        related_name='orders',
+        through='OrderElement',
+        verbose_name='Продукты'
+    )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        related_name='cook_orders',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Готовит ресторан'
+    )
     firstname = models.CharField(
         'Имя',
         max_length=200
@@ -179,17 +190,41 @@ class Order(models.Model):
         'Адрес доставки',
         max_length=200
     )
-    pay_method = models.CharField(max_length=2, choices=PAY_METHOD_CHOICES,
-                                  default=CASH_PAY, verbose_name='Способ оплаты', db_index=True)
+    pay_method = models.CharField(
+        max_length=2,
+        choices=PAY_METHOD_CHOICES,
+        default=CASH_PAY,
+        verbose_name='Способ оплаты',
+        db_index=True
+    )
     comment = models.TextField(
         'Комментарий',
         blank=True
     )
-    created_at = models.DateTimeField(default=timezone.now, verbose_name='Создан', db_index=True)
-    called_at = models.DateTimeField(blank=True, null=True, verbose_name='Дата звонка', db_index=True)
-    delivered_at = models.DateTimeField(blank=True, null=True, verbose_name='Дата доставки', db_index=True)
-    order_status = models.CharField(max_length=2, choices=STATUS_ORDER_CHOICES,
-                                    default=ACCEPT, verbose_name='Статус заказа', db_index=True)
+    created_at = models.DateTimeField(
+        default=timezone.now,
+        verbose_name='Создан',
+        db_index=True
+    )
+    called_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Дата звонка',
+        db_index=True
+    )
+    delivered_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Дата доставки',
+        db_index=True
+    )
+    order_status = models.CharField(
+        max_length=2,
+        choices=STATUS_ORDER_CHOICES,
+        default=ACCEPT,
+        verbose_name='Статус заказа',
+        db_index=True
+    )
 
     objects = OrderProductQuerySet.as_manager()
 

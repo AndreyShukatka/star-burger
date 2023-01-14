@@ -72,8 +72,12 @@ def view_products(request):
 
     products_with_restaurant_availability = []
     for product in products:
-        availability = {item.restaurant_id: item.availability for item in product.menu_items.all()}
-        ordered_availability = [availability.get(restaurant.id, False) for restaurant in restaurants]
+        availability = {
+            item.restaurant_id: item.availability for item in product.menu_items.all()
+        }
+        ordered_availability = [
+            availability.get(restaurant.id, False) for restaurant in restaurants
+        ]
 
         products_with_restaurant_availability.append(
             (product, ordered_availability)
@@ -93,7 +97,9 @@ def view_restaurants(request):
 
 
 def view_orders(request):
-    orders = Order.objects.exclude(order_status='FN').prefetch_related('products')
+    orders = Order.objects.exclude(
+        order_status='FN'
+    ).prefetch_related('products')
     orders_cost = Order.objects.order_cost()
     products_in_restaurants = {}
     restaurants_coordinates = {}
@@ -101,20 +107,29 @@ def view_orders(request):
         products_in_order = order.products.all()
         products_availability = []
         for product in products_in_order:
-            availability = [item.restaurant for item in product.menu_items
-            .filter(availability=True)
-            .select_related('restaurant')]
+            availability = [
+                item.restaurant for item in product.menu_items
+                .filter(availability=True)
+                .select_related('restaurant')
+            ]
             products_availability.append(availability)
         restaurants_with_all_products = list(
-            set.intersection(*[set(product_restaurants) for product_restaurants in products_availability])
+            set.intersection(
+                *[set(product_restaurants) for product_restaurants in products_availability]
+            )
         )
         restaurant_distance = []
         for restaurant in restaurants_with_all_products:
             try:
-                address_obj = AddressCoordinate.objects.get(address=order.address)
+                address_obj = AddressCoordinate.objects.get(
+                    address=order.address
+                )
                 user_coord = (address_obj.lat, address_obj.lon)
             except AddressCoordinate.DoesNotExist:
-                user_coord = fetch_coordinates(settings.YA_GEO_API_KEY, order.address)
+                user_coord = fetch_coordinates(
+                    settings.YA_GEO_API_KEY,
+                    order.address
+                )
                 if not user_coord:
                     continue
                 AddressCoordinate.objects.create(
@@ -124,10 +139,15 @@ def view_orders(request):
                 )
             if restaurant not in restaurants_coordinates.keys():
                 try:
-                    address_obj = AddressCoordinate.objects.get(address=restaurant.address)
+                    address_obj = AddressCoordinate.objects.get(
+                        address=restaurant.address
+                    )
                     restaurant_coord = (address_obj.lat, address_obj.lon)
                 except AddressCoordinate.DoesNotExist:
-                    restaurant_coord = fetch_coordinates(settings.YA_GEO_API_KEY, restaurant.address)
+                    restaurant_coord = fetch_coordinates(
+                        settings.YA_GEO_API_KEY,
+                        restaurant.address
+                    )
                     if not restaurant_coord:
                         continue
                     AddressCoordinate.objects.create(
@@ -138,9 +158,15 @@ def view_orders(request):
                 restaurants_coordinates[restaurant] = restaurant_coord
             else:
                 restaurant_coord = restaurants_coordinates[restaurant]
-            delivery_distance = round(distance.distance(user_coord, restaurant_coord).km, 3)
+            delivery_distance = round(
+                distance.distance(user_coord, restaurant_coord).km,
+                3
+            )
             restaurant_distance.append((restaurant, delivery_distance))
-        restaurant_distance = sorted(restaurant_distance, key=lambda tpl: tpl[1])
+        restaurant_distance = sorted(
+            restaurant_distance,
+            key=lambda tpl: tpl[1]
+        )
         products_in_restaurants[order.id] = restaurant_distance
 
     return render(request, template_name='order_items.html', context={

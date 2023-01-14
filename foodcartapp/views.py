@@ -1,11 +1,8 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-import requests
-import phonenumbers
 from rest_framework.response import Response
-from rest_framework import status
 from .serializers import OrderSerializer
-from .models import Product, Order, OrderElement
+from .models import OrderElement
 
 from rest_framework.decorators import api_view
 from .models import Product, Order
