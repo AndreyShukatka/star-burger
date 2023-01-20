@@ -100,7 +100,7 @@ def view_orders(request):
     orders = Order.objects.exclude(
         order_status='FN'
     ).prefetch_related('products')
-    orders_cost = Order.objects.order_cost()
+    orders_cost = Order.objects.calculate_order_cost()
     products_in_restaurants = {}
     restaurants_coordinates = {}
     for order in orders:
@@ -108,7 +108,7 @@ def view_orders(request):
         products_availability = []
         for product in products_in_order:
             availability = [
-                item.cooks_restaurant for item in product.menu_items
+                item.restaurant for item in product.menu_items
                 .filter(availability=True)
                 .select_related('restaurant')
             ]
