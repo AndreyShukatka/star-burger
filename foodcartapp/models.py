@@ -131,7 +131,6 @@ class OrderProductQuerySet(models.QuerySet):
         order_products_cost = (
             OrderElement.objects
             .all()
-            .select_related('price')
             .annotate(cost=F('price') * F('quantity'))
             .values_list('order', 'cost')
             .values('order')
