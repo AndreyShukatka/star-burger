@@ -3,6 +3,7 @@ from django.templatetags.static import static
 from rest_framework.response import Response
 from .serializers import OrderSerializer
 from .models import OrderElement
+from django.db import transaction
 
 from rest_framework.decorators import api_view
 from .models import Product, Order
@@ -58,6 +59,7 @@ def product_list_api(request):
     return Response(dumped_products)
 
 
+@transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
