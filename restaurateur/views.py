@@ -129,6 +129,7 @@ def view_orders(request):
                     settings.YA_GEO_API_KEY,
                     order.address
                 )
+                user_coord = (lat, lon)
                 if not lat and lon:
                     continue
                 AddressCoordinate.objects.create(
@@ -143,16 +144,21 @@ def view_orders(request):
                     )
                     restaurant_coord = (address_obj.lat, address_obj.lon)
                 except AddressCoordinate.DoesNotExist:
-                    restaurant_coord = fetch_coordinates(
+                    lat, lon = fetch_coordinates(
                         settings.YA_GEO_API_KEY,
                         restaurant.address
                     )
+                    restaurant_coord = (lat, lon)
                     if not restaurant_coord:
-                        continue
+                        AddressCoordinate.objects.create(
+                            address=restaurant.address,
+                            lat=0,
+                            lon=0
+                        )
                     AddressCoordinate.objects.create(
                         address=restaurant.address,
-                        lat=restaurant_coord[0],
-                        lon=restaurant_coord[1]
+                        lat=lat,
+                        lon=lon
                     )
                 restaurants_coordinates[restaurant] = restaurant_coord
             else:
