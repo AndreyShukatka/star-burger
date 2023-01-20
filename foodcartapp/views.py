@@ -70,7 +70,6 @@ def register_order(request):
     )
     all_products = Product.objects.all()
     for product in serializer.validated_data['products']:
-        print(all_products.get(id=product['product'].id).price)
         OrderElement.objects.create(
             order=created_order,
             product=all_products.get(id=product['product'].id),
