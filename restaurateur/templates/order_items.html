@@ -1,6 +1,5 @@
 {% extends 'base_restaurateur_page.html' %}
 
-{% load order_cost %}
 {% load admin_urls %}
 
 {% block title %}Необработанные заказы | Star Burger{% endblock %}
@@ -26,27 +25,30 @@
         <th>Комментарий</th>
         <th>Ссылка на алминку</th>
       </tr>
-
       {% for item in order_items %}
         <tr>
           <td>{{ item.id }}</td>
           <td>{{ item.get_order_status_display }}</td>
           <td>{{ item.get_pay_method_display }}</td>
-          <td>{{ orders_cost|get_order_param:item.id }} руб.</td>
+          <td>{{ item.total_price }} руб.</td>
           <td>{{ item.firstname }} {{ item.lastname }}</td>
           <td>{{ item.phonenumber }}</td>
           <td>{{ item.address }}</td>
           <td>
             {% if item.cooks_restaurant %}
               Готовит {{ item.cooks_restaurant }}
-            {% elif not restaurants|get_order_param:item.id %}
+            {% elif not restaurants %}
               Ошибка определения координат
             {% else %}
               <details>
                 <summary>Может быть приготовлен ресторанами:</summary>
                 <ul>
-                  {% for restaurant in restaurants|get_order_param:item.id %}
-                    <li>{{ restaurant.0 }} - {{ restaurant.1 }} км</li>
+                  {% for item_id, all_restaurant in restaurants.items %}
+                    {% if item_id == item.id %}
+                      {% for restaurant in all_restaurant %}
+                        <li>{{ restaurant.0 }} - {{ restaurant.1 }} км</li>
+                      {% endfor %}
+                    {% endif %}
                   {% endfor %}
                 </ul>
               </details>

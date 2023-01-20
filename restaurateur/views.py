@@ -99,7 +99,7 @@ def view_restaurants(request):
 def view_orders(request):
     orders = Order.objects.exclude(
         order_status='FN'
-    ).prefetch_related('products')
+    ).order_by('created_at').calculate_order_cost().all()
     orders_cost = Order.objects.calculate_order_cost()
     products_in_restaurants = {}
     restaurants_coordinates = {}
@@ -168,7 +168,7 @@ def view_orders(request):
             key=lambda tpl: tpl[1]
         )
         products_in_restaurants[order.id] = restaurant_distance
-
+    print(products_in_restaurants)
     return render(request, template_name='order_items.html', context={
         'order_items': orders,
         'orders_cost': orders_cost,
