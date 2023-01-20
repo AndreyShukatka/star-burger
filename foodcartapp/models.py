@@ -132,7 +132,6 @@ class OrderProductQuerySet(models.QuerySet):
             OrderElement.objects
             .all()
             .annotate(cost=F('price') * F('quantity'))
-            .values_list('order', 'cost')
             .values('order')
             .annotate(total_price=Sum('cost'))
         )
