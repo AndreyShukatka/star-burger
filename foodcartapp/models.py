@@ -151,6 +151,7 @@ class Order(models.Model):
     FINISH = 'FN'
     ELECTRONIC_PAY = 'EL'
     CASH_PAY = 'CS'
+    UNKNOWN = 'UN'
     STATUS_ORDER_CHOICES = [
         (ACCEPT, 'Принят'),
         (ASSEMBLY, 'Сборка'),
@@ -159,7 +160,8 @@ class Order(models.Model):
     ]
     PAY_METHOD_CHOICES = [
         (ELECTRONIC_PAY, 'Электронными'),
-        (CASH_PAY, 'Наличными')
+        (CASH_PAY, 'Наличными'),
+        (UNKNOWN, 'Не назначено')
     ]
     products = models.ManyToManyField(
         Product,
@@ -193,7 +195,7 @@ class Order(models.Model):
     pay_method = models.CharField(
         max_length=2,
         choices=PAY_METHOD_CHOICES,
-        default=CASH_PAY,
+        default=UNKNOWN,
         verbose_name='Способ оплаты',
         db_index=True
     )
