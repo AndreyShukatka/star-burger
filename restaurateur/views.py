@@ -7,9 +7,9 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.conf import settings
 from addressapp.models import AddressCoordinate
+from addressapp.views import fetch_coordinates
 
 from foodcartapp.models import Product, Restaurant, Order
-import requests
 from geopy import distance
 
 
@@ -168,28 +168,8 @@ def view_orders(request):
             key=lambda tpl: tpl[1]
         )
         products_in_restaurants[order.id] = restaurant_distance
-    print(products_in_restaurants)
     return render(request, template_name='order_items.html', context={
         'order_items': orders,
         'orders_cost': orders_cost,
         'restaurants': products_in_restaurants
     })
-
-
-def fetch_coordinates(apikey, address):
-    base_url = "https://geocode-maps.yandex.ru/1.x"
-    params = {
-        "geocode": address,
-        "apikey": apikey,
-        "format": "json"
-    }
-    response = requests.get(base_url, params=params)
-    response.raise_for_status()
-    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
-
-    if not found_places:
-        return None
-
-    most_relevant = found_places[0]
-    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
-    return lat, lon
