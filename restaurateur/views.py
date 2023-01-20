@@ -100,7 +100,6 @@ def view_orders(request):
     orders = Order.objects.exclude(
         order_status='FN'
     ).order_by('created_at').calculate_order_cost().all()
-    orders_cost = Order.objects.calculate_order_cost()
     products_in_restaurants = {}
     restaurants_coordinates = {}
     for order in orders:
@@ -126,16 +125,16 @@ def view_orders(request):
                 )
                 user_coord = (address_obj.lat, address_obj.lon)
             except AddressCoordinate.DoesNotExist:
-                user_coord = fetch_coordinates(
+                lat, lon = fetch_coordinates(
                     settings.YA_GEO_API_KEY,
                     order.address
                 )
-                if not user_coord:
+                if not lat and lon:
                     continue
                 AddressCoordinate.objects.create(
                     address=order.address,
-                    lat=user_coord[0],
-                    lon=user_coord[1]
+                    lat=lat,
+                    lon=lon
                 )
             if restaurant not in restaurants_coordinates.keys():
                 try:
@@ -170,6 +169,5 @@ def view_orders(request):
         products_in_restaurants[order.id] = restaurant_distance
     return render(request, template_name='order_items.html', context={
         'order_items': orders,
-        'orders_cost': orders_cost,
         'restaurants': products_in_restaurants
     })
