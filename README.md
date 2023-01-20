@@ -55,7 +55,7 @@ pip install -r requirements.txt
 ```
 
 Получить токен API Яндекс-геокодера
-[Инструкция к API]<https://dvmn.org/encyclopedia/api-docs/yandex-geocoder-api/>
+[Инструкция к API](https://dvmn.org/encyclopedia/api-docs/yandex-geocoder-api/)
 
 Определите переменную окружения `SECRET_KEY`. Создать файл `.env` в каталоге `star_burger/` и положите туда такой код:
 ```sh
