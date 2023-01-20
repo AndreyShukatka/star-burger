@@ -37,8 +37,8 @@
           <td>{{ item.phonenumber }}</td>
           <td>{{ item.address }}</td>
           <td>
-            {% if item.restaurant %}
-              Готовит {{ item.restaurant }}
+            {% if item.cooks_restaurant %}
+              Готовит {{ item.cooks_restaurant }}
             {% elif not restaurants|get_order_param:item.id %}
               Ошибка определения координат
             {% else %}

@@ -108,7 +108,7 @@ def view_orders(request):
         products_availability = []
         for product in products_in_order:
             availability = [
-                item.restaurant for item in product.menu_items
+                item.cooks_restaurant for item in product.menu_items
                 .filter(availability=True)
                 .select_related('restaurant')
             ]

@@ -127,7 +127,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderElementInline, ]
 
     def response_change(self, request, obj):
-        if obj.restaurant:
+        if obj.cooks_restaurant:
             obj.order_status = 'AS'
             obj.save()
         response = super().response_change(request, obj)

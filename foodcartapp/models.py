@@ -169,7 +169,7 @@ class Order(models.Model):
         through='OrderElement',
         verbose_name='Продукты'
     )
-    restaurant = models.ForeignKey(
+    cooks_restaurant = models.ForeignKey(
         Restaurant,
         related_name='cook_orders',
         blank=True,
