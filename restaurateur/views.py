@@ -152,8 +152,8 @@ def view_orders(request):
                     if not restaurant_coord:
                         AddressCoordinate.objects.create(
                             address=restaurant.address,
-                            lat=0,
-                            lon=0
+                            lat=None,
+                            lon=None
                         )
                     AddressCoordinate.objects.create(
                         address=restaurant.address,
