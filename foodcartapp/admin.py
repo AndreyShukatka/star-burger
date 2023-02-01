@@ -114,6 +114,9 @@ class OrderElementInline(admin.TabularInline):
     model = OrderElement
     extra = 0
 
+@admin.register(ProductCategory)
+class ProductCategoryAdmin(admin.ModelAdmin):
+    pass
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):

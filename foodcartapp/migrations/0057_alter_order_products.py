@@ -10,9 +10,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='order',
-            name='products',
-            field=models.ManyToManyField(related_name='orders', through='foodcartapp.OrderElement', to='foodcartapp.Product', verbose_name='Продукты'),
-        ),
+        # migrations.AlterField(
+        #     model_name='order',
+        #     name='products',
+        #     field=models.ManyToManyField(related_name='orders', through='foodcartapp.OrderElement', to='foodcartapp.Product', verbose_name='Продукты'),
+        # ),
     ]
