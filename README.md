@@ -5,6 +5,9 @@
 ![скриншот сайта](https://dvmn.org/filer/canonical/1594651635/686/)
 
 
+[Пример рабочего сайта](https://www.russiansword.ru)
+
+
 Сеть Star Burger объединяет несколько ресторанов, действующих под единой франшизой. У всех ресторанов одинаковое меню и одинаковые цены. Просто выберите блюдо из меню на сайте и укажите место доставки. Мы сами найдём ближайший к вам ресторан, всё приготовим и привезём.
 
 На сайте есть три независимых интерфейса. Первый — это публичная часть, где можно выбрать блюда из меню, и быстро оформить заказ без регистрации и SMS.
@@ -140,18 +143,214 @@ Parcel будет следить за файлами в каталоге `bundle
 
 ## Как запустить prod-версию сайта
 
-Собрать фронтенд:
+#### Арендуйте удаленный сервер и установите на нем последнюю версию OS Ubuntu
 
+Установите Postgresql, git, pip, venv, nginx:
+```shell
+sudo apt update
+sudo apt -y install git
+sudo apt -y install postgresql
+sudo apt -y install python3-pip
+sudo apt -y install python3-venv
+sudo apt -y install nginx
+```
+#### Создайте базу данных Postgres и пользователя для работы с ней, выполнив последовательно следующие команды:
+```shell
+sudo su - postgres
+psql
+CREATE DATABASE <имя базы данных>;
+CREATE USER <пользователь postgres> WITH PASSWORD '<пароль для пользователя>';
+ALTER ROLE <имя пользователя> SET client_encoding TO 'utf8';
+GRANT ALL PRIVILEGES ON DATABASE <имя базы данных> TO <имя пользователя>;
+```
+
+#### Скачайте код проекта в каталог `/opt` корневого каталога сервера:
+```shell
+cd ..
+cd opt
+git clone https://github.com/Sergryap/star-burger.git
+```
+#### Перейдите в каталог проекта:
+
+```shell
+cd ../opt/star-burger
+```
+###### В каталоге проекта создайте виртуальное окружение:
+```shell
+python3 -m venv venv
+```
+###### Активируйте его:
+
+```shell
+source venv/bin/activate
+```
+###### Установите зависимости в виртуальное окружение:
+```sh
+pip install -r requirements.txt
+```
+#### Установите gunicorn в виртуальное окружение:
+```sh
+pip install gunicorn
+```
+#### В каталоге проекта и установите пакеты Node.js:
+
+```sh
+npm ci --dev
+```
+#### Соберите фронтенд:
 ```sh
 ./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 ```
+#### Создайте файл `.env` с переменными окружения в каталоге `star_burger/`:
+```
+SECRET_KEY=django-insecure-0if40nf4nf93n4
+YANDEX_GEO_TOKEN=<Ваш API ключ от геокодера Яндекса>
+ROLLBAR_ACCESS_TOKEN=<Ваш токен от сервиса rollbar.com>
+ENVIRONMENT=<Название среды разработки для отслеживания ошибок в rollbar.com>
+DB_NAME=<Название БД>
+DB_USER=<Пользователь БД>
+DB_PASSWORD=<Пароль БД>
+DB_HOST=<Хост БД>
+DB_PORT=<Порт БД>
+```
 
-Настроить бэкенд: создать файл `.env` в каталоге `star_burger/` со следующими настройками:
+Подробнее о `ROLLBAR_ACCESS_TOKEN` см здесь: [rollbar.com](https://rollbar.com)
 
-- `DEBUG` — дебаг-режим. Поставьте `False`.
-- `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
-- `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
-- `YA_GEO_API_KEY` - токен, который вы получили [по этой ссылке](https://dvmn.org/encyclopedia/api-docs/yandex-geocoder-api/)
+#### Выполните миграцию базы данных Postgresql следующей командой:
+
+```shell
+python3 manage.py migrate
+```
+#### Создайте суперпользователя:
+```shell
+python3 manage.py createsuperuser
+```
+#### Соберите статику для prod-версии:
+```shell
+python3 manage.py collectstatic
+```
+
+#### Создайте файл `starburger.service` в каталоге `/etc/systemd/system` следующего содержания:
+```markdown
+[Unit]
+Description=GetIP site
+Requires=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/star-burger
+ExecStart=gunicorn -w 3 -b 127.0.0.1:8000 star_burger.wsgi:application
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+#### Настройте автоматическое обновление сертификатов
+###### Создайте файл `certbot-renewal.service` в каталоге `/etc/systemd/system`:
+```markdown
+[Unit]
+Description=Certbot Renewal
+
+[Service]
+ExecStart=/snap/bin/certbot renew --force-renewal --post-hook "systemctl reload nginx.service"
+```
+###### Создайте файл `certbot-renewal.timer` в каталоге `/etc/systemd/system`:
+```markdown
+# Файл /etc/systemd/system/certbot-renewal.timer
+[Unit]
+Description=Timer for Certbot Renewal
+
+[Timer]
+OnBootSec=600000
+OnUnitActiveSec=1w
+
+[Install]
+WantedBy=multi-user.target
+```
+#### Настройте автоматическую очистку сессий пользователей
+###### Создайте файл `clearsessions.service` в каталоге `/etc/systemd/system`:
+```markdown
+[Service]
+WorkingDirectory=/opt/star-burger
+ExecStart=python3 manage.py clearsessions
+Restart=on-failure
+RestartSec=86400s
+
+[Install]
+WantedBy=multi-user.target
+```
+###### Создайте файл `clearsessions.timer` в каталоге `/etc/systemd/system`:
+```markdown
+[Unit]
+Description=Очистить сессию
+
+[Timer]
+OnBootSec=86400
+OnUnitActiveSec=1w
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### Настройте Nginx
+###### Перейдите в каталог /etc/nginx/sites-enabled:
+```shell
+cd ../etc/nginx/sites-enabled
+```
+###### Удалите в этом каталоге все файлы и создайте файл `starburger` следующего содержания:
+
+```markdown
+server {
+
+location / {
+include '/etc/nginx/proxy_params';
+proxy_pass http://127.0.0.1:8000;
+}
+
+location /media/ {
+alias /opt/star-burger/media/;
+}
+
+location /static/ {
+alias /opt/star-burger/staticfiles/;
+}
+server_name Ваш домен www.Ваш домен;
+}
+
+```
+
+## Получаем сертификат для протокола HTTPS
+#### Установить Certbot
+```shell
+sudo snap install --classic certbot
+```
+#### Запустите эту команду, чтобы получить сертификат.
+```shell
+sudo certbot --nginx
+```
+#### Выполните команды для запуска демонов:
+```shell
+systemctl start nginx
+systemctl start starburger
+systemctl enable starburger
+systemctl start certbot-renewal
+systemctl enable certbot-renewal.timer
+systemctl start clearsessions
+systemctl enable clearsessions.timer
+nginx -s reload
+```
+После успешного выполнения указанных действий сайт будет доступен по ссылке:
+```
+http://<HOST вашего сервера>
+```
+## Как быстро применить изменения из репозитория для вашего сайта
+
+Для того чтобы изменения в вашем репозитории быстро отобразились на сайте выполните команду, находясь в корневом каталоге проекта:
+
+```sh
+./deploy_star_burger.sh
+```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
