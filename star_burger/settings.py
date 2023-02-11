@@ -100,14 +100,13 @@ MEDIA_URL = '/media/'
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT')
-    }
+    'default': dj_database_url.config(
+        'postgres://{user}:{password}@localhost:5432/{name}'.format(
+        user=env.str('DB_USER'),
+        password=env.str('DB_PASSWORD'),
+        name=env.str('DB_NAME')
+        )
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
