@@ -13,7 +13,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', False)
-
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost', '81.163.30.207', 'russiansword.ru', 'www.russiansword.ru'])
 
 INSTALLED_APPS = [
@@ -100,15 +99,15 @@ MEDIA_URL = '/media/'
 
 
 DATABASES = {
-    'default': dj_database_url.config(
-        'postgres://{user}:{password}@localhost:5432/{name}'.format(
-        user=env.str('DB_USER'),
-        password=env.str('DB_PASSWORD'),
-        name=env.str('DB_NAME')
-        )
+    'default': dj_database_url.config(default='postgres://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'.format(
+        db_user=env('DB_USER'),
+        db_password=env('DB_PASSWORD'),
+        db_host=env('DB_HOST'),
+        db_port=env('DB_PORT'),
+        db_name=env('DB_NAME')
+    )
     )
 }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
